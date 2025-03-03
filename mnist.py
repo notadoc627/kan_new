@@ -4,8 +4,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 import time
-from model.MyMLP import MyMLP
-from model.MyCNN import MyCNN
+from model.MLP import MnistMLP
+from model.CNN import MnistCNN
+from kan import KAN
 
 # 计算模型的参数量
 def count_parameters(model):
@@ -30,7 +31,6 @@ def load_mnist():
 
     return train_loader, val_loader, test_loader
 
-
 # 训练和测试函数
 def train_and_test(model, train_loader, val_loader, test_loader, epochs=100):
     criterion = nn.CrossEntropyLoss()
@@ -38,12 +38,14 @@ def train_and_test(model, train_loader, val_loader, test_loader, epochs=100):
 
     total_params = count_parameters(model)
     print(f"Model parameters: {total_params}")
+    print(f"Model structure:\n{model}")  # 打印模型结构
 
     total_train_time = 0
     for epoch in range(epochs):
         start_time = time.time()
         model.train()
         for batch_idx, (data, target) in enumerate(train_loader):
+            data = data.view(-1, 28*28)
             optimizer.zero_grad()
             output = model(data)
             loss = criterion(output, target)
@@ -60,6 +62,7 @@ def train_and_test(model, train_loader, val_loader, test_loader, epochs=100):
         val_total = 0
         with torch.no_grad():
             for data, target in val_loader:
+                data = data.view(-1, 28*28)
                 output = model(data)
                 _, predicted = torch.max(output.data, 1)
                 val_total += target.size(0)
@@ -78,6 +81,7 @@ def train_and_test(model, train_loader, val_loader, test_loader, epochs=100):
     total = 0
     with torch.no_grad():
         for data, target in test_loader:
+            data = data.view(-1, 28*28)
             output = model(data)
             _, predicted = torch.max(output.data, 1)
             total += target.size(0)
@@ -95,11 +99,15 @@ if __name__ == "__main__":
     output_size = 10
 
     # 训练和测试 MLP 模型
-    mlp = MyMLP(input_size, hidden_size, output_size)
+    mlp = MnistMLP(input_size, hidden_size, output_size)
     print("Training and testing MLP on MNIST...")
     # train_and_test(mlp, mnist_train_loader, mnist_val_loader, mnist_test_loader)
 
     # 训练和测试 CNN 模型
-    cnn = MyCNN()
+    cnn = MnistCNN()
     print("Training and testing CNN on MNIST...")
-    train_and_test(cnn, mnist_train_loader, mnist_val_loader, mnist_test_loader)
+    # train_and_test(cnn, mnist_train_loader, mnist_val_loader, mnist_test_loader)
+
+    kan = KAN(width=[28*28, 64, 10])
+    print("Training and testing KAN on MNIST...")
+    train_and_test(kan, mnist_train_loader, mnist_val_loader, mnist_test_loader)

@@ -4,7 +4,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
 from torchvision import datasets, transforms
 import time
-from model import CNN, MLP
+from model.MLP import CIFARMLP
+from model.CNN import CIFARCNN
+from kan import KAN
 
 # 计算模型的参数量
 def count_parameters(model):
@@ -94,11 +96,15 @@ if __name__ == "__main__":
     output_size = 10
 
     # 训练和测试 MLP 模型
-    mlp = MLP(input_size, hidden_size, output_size)
+    mlp = CIFARMLP()
     print("Training and testing MLP on CIFAR - 10...")
-    train_and_test(mlp, cifar10_train_loader, cifar10_val_loader, cifar10_test_loader)
+    #train_and_test(mlp, cifar10_train_loader, cifar10_val_loader, cifar10_test_loader)
 
     # 训练和测试 CNN 模型
-    cnn = CNN(output_size)
+    cnn = CIFARCNN()
     print("Training and testing CNN on CIFAR - 10...")
-    train_and_test(cnn, cifar10_train_loader, cifar10_val_loader, cifar10_test_loader)
+    #train_and_test(cnn, cifar10_train_loader, cifar10_val_loader, cifar10_test_loader)
+
+    kan = KAN(width=[3*32*32, 64, 10])
+    print("Training and testing KAN on MNIST...")
+    train_and_test(kan, cifar10_train_loader, cifar10_val_loader, cifar10_test_loader)
